@@ -4,7 +4,8 @@ from networksecurity.components.data_ingestion import DataIngestion
 # Config
 from networksecurity.components.data_transformation import DataTransformation
 from networksecurity.components.data_validation import DataValidation
-from networksecurity.entity.config_entity import DataIngestionConfig, DataTransformationConfig, DataValidationConfig, TrainingPipelineConfig
+from networksecurity.components.model_trainer import ModelTrainer
+from networksecurity.entity.config_entity import DataIngestionConfig, DataTransformationConfig, DataValidationConfig, ModelTrainerConfig, TrainingPipelineConfig
 
 # Loggers & Exception
 from networksecurity.exception.exception import NetworkSecurityException
@@ -48,6 +49,18 @@ def data_transformation(training_pipeline_config, data_validation_artifact):
      except Exception as e:
            raise NetworkSecurityException(e, sys)
 
+def model_trainer(training_pipeline_config, data_transformation_artifact):
+    try:
+        logging.info("Model Training sstared")
+        model_trainer_config = ModelTrainerConfig(training_pipeline_config)
+        model_trainer = ModelTrainer(model_trainer_config=model_trainer_config,data_transformation_artifact=data_transformation_artifact)
+        logging.info(" ##### Initiate Model Trainer ##### ")
+        model_trainer_artifact = model_trainer.initiate_model_trainer()
+        logging.info(" ##### Model Training artifact created ##### ")
+        return model_trainer_artifact
+    except Exception as e:
+        raise NetworkSecurityException(e, sys)
+
 if __name__ == "__main__":
     training_pipeline_config = TrainingPipelineConfig()
     data_ingestion_artifact = data_ingestion(training_pipeline_config)
@@ -55,3 +68,5 @@ if __name__ == "__main__":
     data_validation_artifact = data_validation(training_pipeline_config, data_ingestion_artifact)
     print("\n\n")
     data_transformation_artifact = data_transformation(training_pipeline_config, data_validation_artifact)
+    print("\n\n")
+    model_trainer_artifact = model_trainer(training_pipeline_config, data_transformation_artifact)
